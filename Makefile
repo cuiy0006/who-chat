@@ -1,10 +1,10 @@
 CC = g++
-CFLAGS = -std=c++11
+CPPFLAGS = -std=c++11
 
 all: src/server/server-main.cpp src/server/server.o
-	$(CC) $(CFLAGS) src/server/server-main.cpp src/server/server.o -o who_chat_server
+	$(CC) $(CPPFLAGS) src/server/server-main.cpp src/server/server.o -o who_chat_server
 
 server.o: src/server/server.cpp src/server/server.h src/common/common.h
-	$(CC) $(CFLAGS) -c src/server/server.cpp
+	$(CC) -std=c++11 -c src/server/server.cpp
 
 clean: rm -rf *.o who_chat_server

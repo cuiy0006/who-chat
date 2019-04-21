@@ -100,7 +100,7 @@ void Server::Start(){
 
             if(event_socket_fd == server_socket_fd){
                 struct sockaddr_in client_address;
-                int client_address_size = sizeof(client_address);
+                socklen_t client_address_size = sizeof(client_address);
                 //It extracts the first connection request on the queue of pending connections for the listening socket
                 int client_socket_fd = accept(server_socket_fd, (struct sockaddr*) &client_address, &client_address_size);
 
