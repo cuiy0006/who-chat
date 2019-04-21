@@ -46,8 +46,8 @@ int Server::SendBroadcastMessage(int client_fd){
     // formatted message
     char message[BUF_SIZE];
 
-    memset(buf, BUF_SIZE);
-    memset(message, BUF_SIZE);
+    bzero(buf, BUF_SIZE);
+    bzero(message, BUF_SIZE);
 
     std::cout << "read from client(clientId=" << client_fd << ")" << "\n";
     int len = recv(client_fd, buf, BUF_SIZE, 0);
@@ -110,11 +110,11 @@ void Server::Start(){
                 registerFd(epoll_fd, client_socket_fd, true);
 
                 clients_list.push_back(client_socket_fd);
-                bsl::cout << "Added new client(clientId=" << client_socket_fd << "\n";
-                bsl::cout << "Now there are " << clients_list.size() << " clients in the chat room";
+                std::cout << "Added new client(clientId=" << client_socket_fd << "\n";
+                std::cout << "Now there are " << clients_list.size() << " clients in the chat room";
 
                 char message[BUF_SIZE];
-                memset(message, BUF_SIZE);
+                bzero(message, BUF_SIZE);
                 sprintf(message, SERVER_WELCOME_MESSAGE, client_socket_fd);
                 int ret = send(client_socket_fd, message, BUF_SIZE, 0);
                 if(ret < 0){
