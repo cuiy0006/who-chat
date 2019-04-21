@@ -23,6 +23,6 @@ private:
     int epoll_fd;
     
     list<int> clients_list;
-}
+};
 
 #endif

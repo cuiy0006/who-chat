@@ -11,14 +11,14 @@ void Server::Init(){
     server_socket_fd = socket(PF_INET, SOCK_STREAM, 0);
     if(server_socket_fd < 0){
         std::cerr << "create server socket fd error" << "\n";
-        throw new exception("create server socket fd error");
+        throw runtime_error("create server socket fd error");
     }
 
     std::cout << "server socket fd created..." << "\n";
 
     if(bind(server_socket_fd, (struct sockaddr*) &server_addr, sizeof(server_addr)) < 0){
         std::cerr << "bind server socket fd error" << "\n";
-        throw new exception("bind server socket fd error");
+        throw runtime_error("bind server socket fd error");
     }
 
     std::cout << "server socket fd binded..." << "\n";
@@ -26,7 +26,7 @@ void Server::Init(){
     int ret = listen(server_socket_fd, MAX_CON_LENGTH); 
     if(ret < 0) {
         std::cerr << "listen server socket fd error" << "\n";
-        throw new exception("listen server socket fd error");
+        throw runtime_error("listen server socket fd error");
     }
 
     std::cout << "listening... " << SERVER_IP << ":" << SERVER_PORT << "\n";
@@ -34,7 +34,7 @@ void Server::Init(){
     epoll_fd = epoll_create(EPOLL_SIZE);
     if(epoll_fd < 0){
         std::cerr << "create epoll fd error" << "\n";
-        throw new exception("create epoll fd error");
+        throw runtime_error("create epoll fd error");
     }
 
     std::cout << "epoll fd created...";
@@ -89,13 +89,13 @@ void Server::Start(){
 
         if(epoll_events_count < 0){
             std::cerr << "epoll wait error" << "\n";
-            throw new exception("epoll wait error");
+            throw runtime_error("epoll wait error");
         }
 
         std::cout << "epoll event count: " << epoll_events_count << "\n";
 
         for(size_t i = 0; i < epoll_events_count; ++i){
-            // the client's target/destination fd
+            // the client's fd or server's fd
             int event_socket_fd = events[i].data.fd;
 
             if(event_socket_fd == server_socket_fd){
@@ -119,19 +119,19 @@ void Server::Start(){
                 int ret = send(client_socket_fd, message, BUF_SIZE, 0);
                 if(ret < 0){
                     std::cerr << "send welcome error. clientId=" << client_socket_fd << "\n";
-                    throw new exception("send welcome error.");
+                    throw runtime_error("send welcome error.");
                 }
             } else {
                 int ret = SendBroadcastMessage(event_socket_fd);
                 if(ret < 0){
-                    std::cerr << "broadcase error. clientId=" << client_socket_fd << "\n";
-                    throw new exception("broadcase error.");
+                    std::cerr << "broadcase error. clientId=" << event_socket_fd << "\n";
+                    throw runtime_error("broadcase error.");
                 }
             }
         }
     }
 
-    close();
+    Close();
     
 }
 
