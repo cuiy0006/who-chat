@@ -67,7 +67,7 @@ int Server::SendBroadcastMessage(int client_fd){
         sprintf(message, SERVER_MESSAGE, client_fd, buf);
 
         auto begin = clients_list.begin();
-        auto end = client_list.end();
+        auto end = clients_list.end();
         for(auto it = begin; it != end; ++it){
             if(*it != client_fd){
                 if(send(*it, message, BUF_SIZE, 0) < 0){
