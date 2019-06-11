@@ -5,23 +5,27 @@ Server::Server(){
     server_addr.sin_port = htons(SERVER_PORT);
     server_addr.sin_addr.s_addr = inet_addr(SERVER_IP);
 
+    server_socket_fd = 0;
+    epoll_fd = 0;
 }
 
 void Server::Init(){
+    std::cout << "Initialzing server...";
+
     server_socket_fd = socket(PF_INET, SOCK_STREAM, 0);
     if(server_socket_fd < 0){
         std::cerr << "create server socket fd error" << "\n";
         throw runtime_error("create server socket fd error");
     }
 
-    std::cout << "server socket fd created..." << "\n";
+    std::cout << "server socket fd (" << server_socket_fd << ") created " << "\n";
 
     if(bind(server_socket_fd, (struct sockaddr*) &server_addr, sizeof(server_addr)) < 0){
         std::cerr << "bind server socket fd error" << "\n";
         throw runtime_error("bind server socket fd error");
     }
 
-    std::cout << "server socket fd binded..." << "\n";
+    std::cout << "server socket fd (" << server_socket_fd <<") binded to IP address (" << SERVER_IP << ":" << SERVER_PORT << ")\n";
 
     int ret = listen(server_socket_fd, MAX_CON_LENGTH); 
     if(ret < 0) {
@@ -29,7 +33,7 @@ void Server::Init(){
         throw runtime_error("listen server socket fd error");
     }
 
-    std::cout << "listening... " << SERVER_IP << ":" << SERVER_PORT << "\n";
+    std::cout << "listening to server socket fd (" << server_socket_fd << ")\n";
 
     epoll_fd = epoll_create(EPOLL_SIZE);
     if(epoll_fd < 0){
@@ -37,7 +41,9 @@ void Server::Init(){
         throw runtime_error("create epoll fd error");
     }
 
-    std::cout << "epoll fd created...";
+    std::cout << "epoll fd(" << epoll_fd << ") created";
+
+    std::cout << "Initialzed server";
 }
 
 int Server::SendBroadcastMessage(int client_fd){
@@ -56,8 +62,8 @@ int Server::SendBroadcastMessage(int client_fd){
     if(len == 0){
         close(client_fd);
         clients_list.remove(client_fd);
-        std::cout << "(clientId = " << client_fd << ") closed connection." << "\n"
-                  << "[" << clients_list.size() << "] left in the chatroom" << "\n";
+        std::cout << "clientId (" << client_fd << ") closed connection." << "\n"
+                  << "[" << clients_list.size() << "] clients left in the chatroom" << "\n";
     } else {
         if(clients_list.size() == 1){
             send(client_fd, LAST_USER_MESSAGE, strlen(LAST_USER_MESSAGE), 0);
@@ -107,10 +113,10 @@ void Server::Start(){
                 std::cout << "client connection from: " << inet_ntoa(client_address.sin_addr) << ":" << ntohs(client_address.sin_port)
                           << ", client fd = " << client_socket_fd << "\n";
                 
-                registerFd(epoll_fd, client_socket_fd, true);
+                // register client_socket_fd to epoll_fd
+                register_fd(epoll_fd, client_socket_fd, true);
 
                 clients_list.push_back(client_socket_fd);
-                std::cout << "Added new client(clientId=" << client_socket_fd << "\n";
                 std::cout << "Now there are " << clients_list.size() << " clients in the chat room";
 
                 char message[BUF_SIZE];

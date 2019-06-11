@@ -31,11 +31,11 @@
 #define LAST_USER_MESSAGE "You are the only user in the chat."
 #define SERVER_MESSAGE "ClientId [%d] say >> %s"
 
-// register fd to epoll
+// register socket fd to epoll
 // epoll_fd: handler of epoll
 // fd: handler which is listened to
 // enable_et: edge-triggered
-static void registerFd(int epoll_fd, int fd, bool enable_et) {
+static void register_fd(int epoll_fd, int fd, bool enable_et) {
     // struct epoll_event
     // {
     //        uint32_t events;	/* Epoll events */
@@ -47,11 +47,11 @@ static void registerFd(int epoll_fd, int fd, bool enable_et) {
     if(enable_et){
         event.events |= EPOLLET;
     }
-    // register fd to epoll_fd
+    // register socket fd to epoll_fd
     epoll_ctl(epoll_fd, EPOLL_CTL_ADD, fd, &event);
     // set nonblock
     fcntl(fd, F_SETFL, fcntl(fd, F_GETFD, 0) | O_NONBLOCK);
-    std::cout << "fd added to epoll" << "\n\n"; 
+    std::cout << "fd(" << fd <<") registered to epoll" << "\n\n"; 
 }
 
 #endif

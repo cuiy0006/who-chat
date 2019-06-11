@@ -1,7 +1,7 @@
 #ifndef WHOCHAT_SERVER_H
 #define WHOCHAT_SERVER_H
 
-#include "../common/common.h"
+#include "common.h"
 
 using namespace std;
 
@@ -15,10 +15,13 @@ public:
 
 private:
     int SendBroadcastMessage(int client_fd);
+
+    // server's address(address, port, family)
     struct sockaddr_in server_addr;
 
     // listener to socket
     int server_socket_fd;
+    
     // created epoll handler
     int epoll_fd;
     
