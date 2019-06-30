@@ -54,7 +54,7 @@ void Client::Connect(){
 }
 
 
-void Client::start(){
+void Client::Start(){
     static struct epoll_event events[2];
     Connect();
     pid = fork();
