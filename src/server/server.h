@@ -3,8 +3,6 @@
 
 #include "common.h"
 
-using namespace std;
-
 class Server {
 
 public:

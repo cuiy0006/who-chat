@@ -10,40 +10,27 @@ Server::Server(){
 }
 
 void Server::Init(){
-    std::cout << "Initialzing server...";
 
     server_socket_fd = socket(PF_INET, SOCK_STREAM, 0);
     if(server_socket_fd < 0){
-        std::cerr << "create server socket fd error" << "\n";
         throw runtime_error("create server socket fd error");
     }
 
-    std::cout << "server socket fd (" << server_socket_fd << ") created " << "\n";
-
     if(bind(server_socket_fd, (struct sockaddr*) &server_addr, sizeof(server_addr)) < 0){
-        std::cerr << "bind server socket fd error" << "\n";
         throw runtime_error("bind server socket fd error");
     }
 
-    std::cout << "server socket fd (" << server_socket_fd <<") binded to IP address (" << SERVER_IP << ":" << SERVER_PORT << ")\n";
-
     int ret = listen(server_socket_fd, MAX_CON_LENGTH); 
     if(ret < 0) {
-        std::cerr << "listen server socket fd error" << "\n";
         throw runtime_error("listen server socket fd error");
     }
 
-    std::cout << "listening to server socket fd (" << server_socket_fd << ")\n";
-
     epoll_fd = epoll_create(EPOLL_SIZE);
     if(epoll_fd < 0){
-        std::cerr << "create epoll fd error" << "\n";
         throw runtime_error("create epoll fd error");
     }
 
-    std::cout << "epoll fd(" << epoll_fd << ") created";
-
-    std::cout << "Initialzed server";
+    register_fd(epoll_fd, server_socket_fd, true);
 }
 
 int Server::SendBroadcastMessage(int client_fd){
@@ -55,15 +42,12 @@ int Server::SendBroadcastMessage(int client_fd){
     bzero(buf, BUF_SIZE);
     bzero(message, BUF_SIZE);
 
-    std::cout << "read from client(clientId=" << client_fd << ")" << "\n";
     int len = recv(client_fd, buf, BUF_SIZE, 0);
 
     // client closed the connection
     if(len == 0){
         close(client_fd);
         clients_list.remove(client_fd);
-        std::cout << "clientId (" << client_fd << ") closed connection." << "\n"
-                  << "[" << clients_list.size() << "] clients left in the chatroom" << "\n";
     } else {
         if(clients_list.size() == 1){
             send(client_fd, LAST_USER_MESSAGE, strlen(LAST_USER_MESSAGE), 0);
@@ -77,7 +61,7 @@ int Server::SendBroadcastMessage(int client_fd){
         for(auto it = begin; it != end; ++it){
             if(*it != client_fd){
                 if(send(*it, message, BUF_SIZE, 0) < 0){
-                    std::cerr << "Cannot send message to " << *it << "\n";
+                    throw runtime_error("Cannot send message to a client");
                 }
             }
         }
@@ -94,11 +78,8 @@ void Server::Start(){
         int epoll_events_count = epoll_wait(epoll_fd, events, EPOLL_SIZE, -1);
 
         if(epoll_events_count < 0){
-            std::cerr << "epoll wait error" << "\n";
             throw runtime_error("epoll wait error");
         }
-
-        std::cout << "epoll event count: " << epoll_events_count << "\n";
 
         for(size_t i = 0; i < epoll_events_count; ++i){
             // the client's fd or server's fd
@@ -107,30 +88,22 @@ void Server::Start(){
             if(event_socket_fd == server_socket_fd){
                 struct sockaddr_in client_address;
                 socklen_t client_address_size = sizeof(client_address);
-                //It extracts the first connection request on the queue of pending connections for the listening socket
                 int client_socket_fd = accept(server_socket_fd, (struct sockaddr*) &client_address, &client_address_size);
 
-                std::cout << "client connection from: " << inet_ntoa(client_address.sin_addr) << ":" << ntohs(client_address.sin_port)
-                          << ", client fd = " << client_socket_fd << "\n";
-                
-                // register client_socket_fd to epoll_fd
                 register_fd(epoll_fd, client_socket_fd, true);
 
                 clients_list.push_back(client_socket_fd);
-                std::cout << "Now there are " << clients_list.size() << " clients in the chat room";
 
                 char message[BUF_SIZE];
                 bzero(message, BUF_SIZE);
                 sprintf(message, SERVER_WELCOME_MESSAGE, client_socket_fd);
                 int ret = send(client_socket_fd, message, BUF_SIZE, 0);
                 if(ret < 0){
-                    std::cerr << "send welcome error. clientId=" << client_socket_fd << "\n";
                     throw runtime_error("send welcome error.");
                 }
             } else {
                 int ret = SendBroadcastMessage(event_socket_fd);
                 if(ret < 0){
-                    std::cerr << "broadcase error. clientId=" << event_socket_fd << "\n";
                     throw runtime_error("broadcase error.");
                 }
             }

@@ -8,15 +8,15 @@ class Client{
 
 public:
     Client();
-    void close();
-    void start();
+    void Close();
+    void Start();
 
 private:
-    void connect();
+    void Connect();
     int server_socket_fd;
     int pid;
     int epoll_fd;
-    int pip_fd[2];
+    int pipe_fd[2];
     bool is_client_work;
     char message[BUF_SIZE];
     struct sockaddr_in server_addr;

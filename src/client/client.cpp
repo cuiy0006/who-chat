@@ -12,8 +12,8 @@ Client::Client(){
     epoll_fd = 0;
 }
 
-void Client::connect(){
-    std::cout << "Initialzing server...";
+void Client::Connect(){
+    std::cout << "Initialzing server...\n";
 
     std::cout << "connect server(" << SERVER_IP << ":" << SERVER_PORT << ")...\n";
 
@@ -45,18 +45,18 @@ void Client::connect(){
         throw runtime_error("create epoll fd error");
     }
 
-    std::cout << "epoll fd(" << epoll_fd << ") created";
+    std::cout << "epoll fd(" << epoll_fd << ") created\n";
 
     register_fd(epoll_fd, server_socket_fd, true);
     register_fd(epoll_fd, pipe_fd[0], true);
 
-    std::cout << "Initialzed server";
+    std::cout << "Initialzed client\n";
 }
 
 
 void Client::start(){
     static struct epoll_event events[2];
-    connect();
+    Connect();
     pid = fork();
     if(pid < 0){
         std::cerr << "create child process error" << "\n";
@@ -64,7 +64,7 @@ void Client::start(){
     }
 
     if(pid == 0){
-        close(pip_fd[0]);
+        close(pipe_fd[0]);
         std::cout << "Please input 'exit' to exit the chat room\n";
 
         while(is_client_work){
@@ -81,7 +81,7 @@ void Client::start(){
             }
         }
     } else {
-        close(pip_fd[1]);
+        close(pipe_fd[1]);
         while(is_client_work) {
             int epoll_events_count = epoll_wait(epoll_fd, events, 2, -1);
 
@@ -114,7 +114,7 @@ void Client::start(){
 }
 
 
-void Client::close(){
+void Client::Close(){
     if(pid){
         //close parent pipe
         close(pipe_fd[0]);

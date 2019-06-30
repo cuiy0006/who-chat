@@ -15,6 +15,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+using namespace std::runtime_error;
+
 #define SERVER_IP "127.0.0.1"
 #define SERVER_PORT 8888
 // max handlers epoll supports
@@ -26,7 +28,7 @@
 #define MAX_CON_LENGTH 5
 
 // common message
-#define SERVER_WELCOME_MESSAGE "Welcome to char, your chat id: %s"
+#define SERVER_WELCOME_MESSAGE "Welcome to char, your chat id: %d"
 #define EXIT_MESSAGE "End chat."
 #define LAST_USER_MESSAGE "You are the only user in the chat."
 #define SERVER_MESSAGE "ClientId [%d] say >> %s"
