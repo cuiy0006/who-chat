@@ -3,7 +3,7 @@ CPPFLAGS = -std=c++11
 INCLUDE=-Isrc/common
 
 who_chat_client: src/client/client-main.o src/client/client.o
-	$(CC) $(CPPFLAGS) -c $^ -o $@
+	$(CC) $(CPPFLAGS) $^ -o $@
 
 src/client/client-main.o: src/client/client-main.cpp
 	$(CC) $(CPPFLAGS) $(INCLUDE) -c $^ -o $@
