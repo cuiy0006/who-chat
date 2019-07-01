@@ -11,6 +11,7 @@ Server::Server(){
 
 void Server::Init(){
 
+    std::cout << "Initializing server..." << std::endl; 
     server_socket_fd = socket(PF_INET, SOCK_STREAM, 0);
     if(server_socket_fd < 0){
         throw runtime_error("create server socket fd error");
@@ -29,11 +30,14 @@ void Server::Init(){
     if(epoll_fd < 0){
         throw runtime_error("create epoll fd error");
     }
+    std::cout << "epoll_fd[" << epoll_fd << "] created" << std::endl;
 
     register_fd(epoll_fd, server_socket_fd, true);
+    std::cout << "Initialized server" << std::endl; 
 }
 
 int Server::SendBroadcastMessage(int client_fd){
+    std::cout << "Broadcasting msg from client["<< client_fd << "]" << std::endl;
     // message
     char buf[BUF_SIZE];
     // formatted message
@@ -86,12 +90,13 @@ void Server::Start(){
             int event_socket_fd = events[i].data.fd;
 
             if(event_socket_fd == server_socket_fd){
+
                 struct sockaddr_in client_address;
                 socklen_t client_address_size = sizeof(client_address);
                 int client_socket_fd = accept(server_socket_fd, (struct sockaddr*) &client_address, &client_address_size);
+                std::cout << "Adding client_socket_fd[" << client_socket_fd << "] to server" << std::endl;
 
                 register_fd(epoll_fd, client_socket_fd, true);
-
                 clients_list.push_back(client_socket_fd);
 
                 char message[BUF_SIZE];

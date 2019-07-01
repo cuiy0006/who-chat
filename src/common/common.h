@@ -53,7 +53,7 @@ static void register_fd(int epoll_fd, int fd, bool enable_et) {
     epoll_ctl(epoll_fd, EPOLL_CTL_ADD, fd, &event);
     // set nonblock
     fcntl(fd, F_SETFL, fcntl(fd, F_GETFD, 0) | O_NONBLOCK);
-    std::cout << "fd(" << fd <<") registered to epoll" << "\n\n"; 
+    std::cout << "fd[" << fd << "] is registered to epoll[" << epoll_fd << "]" << std::endl; 
 }
 
 #endif

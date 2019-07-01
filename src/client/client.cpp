@@ -13,44 +13,37 @@ Client::Client(){
 }
 
 void Client::Connect(){
-    std::cout << "Initialzing server...\n";
-
-    std::cout << "connect server(" << SERVER_IP << ":" << SERVER_PORT << ")...\n";
+    std::cout << "Initializing client..." << std::endl;
+    std::cout << "Connecting server[" << SERVER_IP << ":" << SERVER_PORT << "]" << std::endl;
 
     server_socket_fd = socket(PF_INET, SOCK_STREAM, 0);
     if(server_socket_fd < 0){
-        std::cerr << "create server socket fd error" << "\n";
         throw runtime_error("create server socket fd error");
     }
 
-    std::cout << "server socket fd (" << server_socket_fd << ") created " << "\n";
-
     if(connect(server_socket_fd, (struct sockaddr*) &server_addr, sizeof(server_addr)) < 0){
-        std::cerr << "connect server error" << "\n";
         throw runtime_error("connect server error");
     }
 
-    std::cout << "server connected" << "\n";
+    std::cout << "Server connected" << std::endl;
 
     // pipe_fd[0]: parent pipe
     // pipe_fd[1]: child pipe
     if(pipe(pipe_fd) < 0){
-        std::cerr << "create pipe error" << "\n";
         throw runtime_error("create pipe error");
     }
 
     epoll_fd = epoll_create(EPOLL_SIZE);
     if(epoll_fd < 0){
-        std::cerr << "create epoll fd error" << "\n";
         throw runtime_error("create epoll fd error");
     }
 
-    std::cout << "epoll fd(" << epoll_fd << ") created\n";
+    std::cout << "epoll_fd[" << epoll_fd << "] created" << std::endl;
 
     register_fd(epoll_fd, server_socket_fd, true);
     register_fd(epoll_fd, pipe_fd[0], true);
 
-    std::cout << "Initialzed client\n";
+    std::cout << "Initialzed client" << std::endl;
 }
 
 
@@ -59,13 +52,12 @@ void Client::Start(){
     Connect();
     pid = fork();
     if(pid < 0){
-        std::cerr << "create child process error" << "\n";
         throw runtime_error("create child process error");
     }
 
     if(pid == 0){
         close(pipe_fd[0]);
-        std::cout << "Please input 'exit' to exit the chat room\n";
+        std::cout << "Input 'exit' to exit the chat room\n";
 
         while(is_client_work){
             bzero(message, BUF_SIZE);
@@ -75,7 +67,6 @@ void Client::Start(){
                 is_client_work = 0;
             } else {
                 if(write(pipe_fd[1], message, strlen(message) - 1) < 0){
-                    std::cerr << "write message error" << "\n";
                     throw runtime_error("write message error");
                 }
             }
@@ -92,7 +83,7 @@ void Client::Start(){
                     int ret = recv(server_socket_fd, message, BUF_SIZE, 0);
 
                     if(ret == 0){
-                        std::cout << "server connection closed: " << events[i].data.fd << "\n";
+                        std::cout << "server_socket_fd[" << events[i].data.fd << "] is closed" << std::endl;
                         close(server_socket_fd);
                         is_client_work = 0;
                     } else {
